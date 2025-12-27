@@ -2,7 +2,9 @@ const leadService = require('../services/lead.service');
 
 const list = async (req, res, next) => {
   try {
-    const leads = await leadService.listLeads();
+    const leads = await leadService.listLeads({
+      sourceScraping: req.query.sourceScraping
+    });
     res.status(200).json({ success: true, data: leads });
   } catch (error) {
     next(error);

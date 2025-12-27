@@ -7,17 +7,35 @@ const SEARCH_RESULT_FIELDS = `
   src.redirect_link,
   src.displayed_link,
   src.source,
-  c.company_name
+  c.company_name,
+  src.company_id::text AS source_scraping
 `;
 
-const findAll = async () => {
+const buildFilters = (filters = {}) => {
+  const clauses = [];
+  const values = [];
+
+  if (typeof filters.sourceScraping === 'number') {
+    values.push(filters.sourceScraping);
+    clauses.push(`src.company_id = $${values.length}`);
+  }
+
+  return {
+    where: clauses.length ? `WHERE ${clauses.join(' AND ')}` : '',
+    values
+  };
+};
+
+const findAll = async (filters = {}) => {
+  const { where, values } = buildFilters(filters);
   const query = `
     SELECT ${SEARCH_RESULT_FIELDS}
     FROM search_results_companies src
     LEFT JOIN companies c ON c.id = src.company_id
+    ${where}
     ORDER BY src.company_id ASC, src.link ASC
   `;
-  const { rows } = await pool.query(query);
+  const { rows } = await pool.query(query, values);
   return rows;
 };
 

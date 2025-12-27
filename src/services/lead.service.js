@@ -58,8 +58,23 @@ const sanitizePayload = (payload) => ({
   linkedinUrl: normalizeText(payload.linkedinUrl)
 });
 
-const listLeads = async () => {
-  return leadRepository.findAll();
+const sanitizeFilters = (filters = {}) => {
+  const { sourceScraping } = filters;
+  if (sourceScraping === null || sourceScraping === undefined || sourceScraping === '') {
+    return {};
+  }
+
+  const parsed = Number(sourceScraping);
+  if (Number.isNaN(parsed)) {
+    return {};
+  }
+
+  return { sourceScraping: parsed };
+};
+
+const listLeads = async (filters = {}) => {
+  const sanitizedFilters = sanitizeFilters(filters);
+  return leadRepository.findAll(sanitizedFilters);
 };
 
 const updateLead = async (id, payload) => {

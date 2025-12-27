@@ -32,8 +32,23 @@ const sanitizePayload = (payload) => ({
   source: normalizeText(payload.source)
 });
 
-const listResults = async () => {
-  const rows = await searchResultsRepository.findAll();
+const sanitizeFilters = (filters = {}) => {
+  const sourceScrapingValue = filters.sourceScraping;
+  if (sourceScrapingValue === null || sourceScrapingValue === undefined || sourceScrapingValue === '') {
+    return {};
+  }
+
+  const parsed = Number(sourceScrapingValue);
+  if (Number.isNaN(parsed)) {
+    return {};
+  }
+
+  return { sourceScraping: parsed };
+};
+
+const listResults = async (filters = {}) => {
+  const sanitizedFilters = sanitizeFilters(filters);
+  const rows = await searchResultsRepository.findAll(sanitizedFilters);
   return rows.map(formatRow);
 };
 

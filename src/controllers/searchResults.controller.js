@@ -2,7 +2,9 @@ const searchResultsService = require('../services/searchResults.service');
 
 const list = async (req, res, next) => {
   try {
-    const results = await searchResultsService.listResults();
+    const results = await searchResultsService.listResults({
+      sourceScraping: req.query.sourceScraping
+    });
     res.status(200).json({ success: true, data: results });
   } catch (error) {
     next(error);
