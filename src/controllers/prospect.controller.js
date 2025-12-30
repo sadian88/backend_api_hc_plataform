@@ -4,7 +4,7 @@ const list = async (req, res, next) => {
   try {
     const prospects = await prospectService.listProspects({
       sourceScraping: req.query.sourceScraping,
-      companyOrigenLeadId: req.query.companyOrigenLeadId,
+      companyOrigenLead: req.query.companyOrigenLead ?? req.query.companyOrigenLeadId,
       estado: req.query.estado
     });
     res.status(200).json({ success: true, data: prospects });

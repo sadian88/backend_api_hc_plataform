@@ -38,7 +38,7 @@ const sanitizePayload = (payload = {}) => ({
   estado: normalizeText(payload.estado),
   fechaCreacionOrigen: sanitizeDateTime(payload.fechaCreacionOrigen),
   companyId: sanitizeNumber(payload.companyId),
-  companyOrigenLeadId: sanitizeNumber(payload.companyOrigenLeadId)
+  companyOrigenLead: normalizeText(payload.companyOrigenLead)
 });
 
 const sanitizeFilters = (filters = {}) => {
@@ -48,11 +48,11 @@ const sanitizeFilters = (filters = {}) => {
     sanitized.companyId = companyId;
   }
 
-  const originCompanyId = sanitizeNumber(
-    filters.companyOrigenLeadId ?? filters.originCompanyId
+  const originCompany = normalizeText(
+    filters.companyOrigenLead ?? filters.companyOrigenLeadId ?? filters.originCompanyId
   );
-  if (originCompanyId !== null) {
-    sanitized.companyOrigenLeadId = originCompanyId;
+  if (originCompany) {
+    sanitized.companyOrigenLead = originCompany;
   }
 
   const estado = normalizeText(filters.estado);

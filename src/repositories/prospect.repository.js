@@ -12,11 +12,11 @@ const PROSPECT_FIELDS = `
   p.estado,
   p.fecha_creacion_origen,
   p.company_id,
-  p.company_origen_lead_id,
+  p.company_origen_lead,
   p.created_at,
   p.updated_at,
   c.company_name AS company_name,
-  co.company_name AS origen_company_name
+  p.company_origen_lead AS origen_company_name
 `;
 
 const buildFilters = (filters = {}) => {
@@ -28,9 +28,9 @@ const buildFilters = (filters = {}) => {
     clauses.push(`p.company_id = $${values.length}`);
   }
 
-  if (typeof filters.companyOrigenLeadId === 'number') {
-    values.push(filters.companyOrigenLeadId);
-    clauses.push(`p.company_origen_lead_id = $${values.length}`);
+  if (typeof filters.companyOrigenLead === 'string' && filters.companyOrigenLead.length) {
+    values.push(filters.companyOrigenLead);
+    clauses.push(`p.company_origen_lead = $${values.length}`);
   }
 
   if (filters.estado) {
@@ -50,7 +50,6 @@ const findAll = async (filters = {}) => {
     SELECT ${PROSPECT_FIELDS}
     FROM prospectos p
     LEFT JOIN companies c ON c.id = p.company_id
-    LEFT JOIN companies co ON co.id = p.company_origen_lead_id
     ${where}
     ORDER BY p.updated_at DESC NULLS LAST, p.nombre_completo ASC NULLS LAST
   `;
@@ -63,7 +62,6 @@ const findById = async (id) => {
     SELECT ${PROSPECT_FIELDS}
     FROM prospectos p
     LEFT JOIN companies c ON c.id = p.company_id
-    LEFT JOIN companies co ON co.id = p.company_origen_lead_id
     WHERE p.id = $1
   `;
   const { rows } = await pool.query(query, [id]);
@@ -83,7 +81,7 @@ const updateProspect = async (id, payload) => {
       estado = $7,
       fecha_creacion_origen = $8,
       company_id = $9,
-      company_origen_lead_id = $10,
+      company_origen_lead = $10,
       updated_at = NOW()
     WHERE id = $11
     RETURNING id
@@ -99,7 +97,7 @@ const updateProspect = async (id, payload) => {
     payload.estado,
     payload.fechaCreacionOrigen,
     payload.companyId,
-    payload.companyOrigenLeadId,
+    payload.companyOrigenLead,
     id
   ];
 
