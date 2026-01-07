@@ -25,11 +25,55 @@ const normalizeText = (value) => {
   return text.length ? text : null;
 };
 
+const sanitizeNumber = (value) => {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const sanitizeArray = (value) => {
+  if (!value) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || '').trim()).filter((item) => item.length);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(/[\n,]+/)
+      .map((item) => item.trim())
+      .filter((item) => item.length);
+  }
+
+  return [];
+};
+
 const sanitizePayload = (payload) => ({
   title: normalizeText(payload.title),
   redirectLink: normalizeText(payload.redirectLink),
   displayedLink: normalizeText(payload.displayedLink),
-  source: normalizeText(payload.source)
+  source: normalizeText(payload.source),
+  icpIndustries: sanitizeArray(payload.icpIndustries),
+  icpCompanySize: normalizeText(payload.icpCompanySize),
+  icpTargetCountry: normalizeText(payload.icpTargetCountry),
+  icpTargetCity: normalizeText(payload.icpTargetCity),
+  icpIndustryPain: normalizeText(payload.icpIndustryPain),
+  icpCompetitors: sanitizeArray(payload.icpCompetitors),
+  icpCurrentCustomers: sanitizeArray(payload.icpCurrentCustomers),
+  buyerPersonaName: normalizeText(payload.buyerPersonaName),
+  buyerPersonaAge: sanitizeNumber(payload.buyerPersonaAge),
+  buyerPersonaRole: normalizeText(payload.buyerPersonaRole),
+  buyerPersonaCompanyType: normalizeText(payload.buyerPersonaCompanyType),
+  buyerPersonaLocation: normalizeText(payload.buyerPersonaLocation),
+  buyerPersonaGoals: normalizeText(payload.buyerPersonaGoals),
+  buyerPersonaPainPoints: normalizeText(payload.buyerPersonaPainPoints),
+  buyerPersonaBuyingBehavior: normalizeText(payload.buyerPersonaBuyingBehavior),
+  buyerPersonaChannels: sanitizeArray(payload.buyerPersonaChannels)
 });
 
 const sanitizeFilters = (filters = {}) => {

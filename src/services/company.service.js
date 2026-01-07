@@ -1,14 +1,65 @@
 const companyRepository = require('../repositories/company.repository');
 const HttpError = require('../utils/httpError');
 
+const normalizeText = (value) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const text = String(value).trim();
+  return text.length ? text : null;
+};
+
+const sanitizeNumber = (value) => {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const sanitizeArray = (value) => {
+  if (!value) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || '').trim()).filter((item) => item.length);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(/[\n,]+/)
+      .map((item) => item.trim())
+      .filter((item) => item.length);
+  }
+
+  return [];
+};
+
 const sanitizePayload = (payload) => ({
   companyName: String(payload.companyName || '').trim(),
   companyUrlProfile: String(payload.companyUrlProfile || '').trim(),
-  companySegment: payload.companySegment ? String(payload.companySegment).trim() : null,
-  customerUrlProfile: payload.customerUrlProfile
-    ? String(payload.customerUrlProfile).trim()
-    : null,
-  companyIcp: payload.companyIcp ? String(payload.companyIcp).trim() : null,
+  companySegment: normalizeText(payload.companySegment),
+  customerUrlProfile: normalizeText(payload.customerUrlProfile),
+  companyIcp: normalizeText(payload.companyIcp),
+  icpIndustries: sanitizeArray(payload.icpIndustries),
+  icpCompanySize: normalizeText(payload.icpCompanySize),
+  icpTargetCountry: normalizeText(payload.icpTargetCountry),
+  icpTargetCity: normalizeText(payload.icpTargetCity),
+  icpIndustryPain: normalizeText(payload.icpIndustryPain),
+  icpCompetitors: sanitizeArray(payload.icpCompetitors),
+  icpCurrentCustomers: sanitizeArray(payload.icpCurrentCustomers),
+  buyerPersonaName: normalizeText(payload.buyerPersonaName),
+  buyerPersonaAge: sanitizeNumber(payload.buyerPersonaAge),
+  buyerPersonaRole: normalizeText(payload.buyerPersonaRole),
+  buyerPersonaCompanyType: normalizeText(payload.buyerPersonaCompanyType),
+  buyerPersonaLocation: normalizeText(payload.buyerPersonaLocation),
+  buyerPersonaGoals: normalizeText(payload.buyerPersonaGoals),
+  buyerPersonaPainPoints: normalizeText(payload.buyerPersonaPainPoints),
+  buyerPersonaBuyingBehavior: normalizeText(payload.buyerPersonaBuyingBehavior),
+  buyerPersonaChannels: sanitizeArray(payload.buyerPersonaChannels),
   creationDate: payload.creationDate || null
 });
 

@@ -1,0 +1,17 @@
+ALTER TABLE search_results_companies
+  ADD COLUMN IF NOT EXISTS icp_industries TEXT[],
+  ADD COLUMN IF NOT EXISTS icp_company_size VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS icp_target_country VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS icp_target_city VARCHAR(120),
+  ADD COLUMN IF NOT EXISTS icp_industry_pain TEXT,
+  ADD COLUMN IF NOT EXISTS icp_competitors TEXT[],
+  ADD COLUMN IF NOT EXISTS icp_current_customers TEXT[],
+  ADD COLUMN IF NOT EXISTS buyer_persona_name VARCHAR(150),
+  ADD COLUMN IF NOT EXISTS buyer_persona_age INTEGER,
+  ADD COLUMN IF NOT EXISTS buyer_persona_role VARCHAR(150),
+  ADD COLUMN IF NOT EXISTS buyer_persona_company_type VARCHAR(150),
+  ADD COLUMN IF NOT EXISTS buyer_persona_location VARCHAR(150),
+  ADD COLUMN IF NOT EXISTS buyer_persona_goals TEXT,
+  ADD COLUMN IF NOT EXISTS buyer_persona_pain_points TEXT,
+  ADD COLUMN IF NOT EXISTS buyer_persona_buying_behavior TEXT,
+  ADD COLUMN IF NOT EXISTS buyer_persona_channels TEXT[];
