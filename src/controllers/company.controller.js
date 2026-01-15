@@ -36,9 +36,19 @@ const remove = async (req, res, next) => {
   }
 };
 
+const startScraping = async (req, res, next) => {
+  try {
+    const result = await companyService.startScraping(req.params.id);
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   list,
   create,
   update,
-  remove
+  remove,
+  startScraping
 };

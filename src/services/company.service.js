@@ -1,5 +1,8 @@
+const https = require('https');
+const { URL } = require('url');
 const companyRepository = require('../repositories/company.repository');
 const HttpError = require('../utils/httpError');
+const env = require('../config/env');
 
 const normalizeText = (value) => {
   if (value === null || value === undefined) {
@@ -37,6 +40,36 @@ const sanitizeArray = (value) => {
 
   return [];
 };
+
+const postJson = (url, payload) =>
+  new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const data = JSON.stringify(payload);
+    const options = {
+      method: 'POST',
+      hostname: parsed.hostname,
+      path: `${parsed.pathname}${parsed.search}`,
+      port: parsed.port || 443,
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(data)
+      }
+    };
+
+    const request = https.request(options, (res) => {
+      let body = '';
+      res.on('data', (chunk) => {
+        body += chunk;
+      });
+      res.on('end', () => {
+        resolve({ status: res.statusCode || 500, body });
+      });
+    });
+
+    request.on('error', (error) => reject(error));
+    request.write(data);
+    request.end();
+  });
 
 const sanitizePayload = (payload) => ({
   companyName: String(payload.companyName || '').trim(),
@@ -109,9 +142,29 @@ const deleteCompany = async (id) => {
   await companyRepository.deleteCompany(targetId);
 };
 
+const startScraping = async (id) => {
+  const targetId = Number(id);
+  if (Number.isNaN(targetId)) {
+    throw new HttpError(400, 'ID invalido');
+  }
+
+  const existing = await companyRepository.findById(targetId);
+  if (!existing) {
+    throw new HttpError(404, 'Compania no encontrada');
+  }
+
+  const { status } = await postJson(env.scrapingWebhookUrl, { company_id: targetId });
+  if (status < 200 || status >= 300) {
+    throw new HttpError(502, 'No se pudo iniciar el scraping');
+  }
+
+  return { status };
+};
+
 module.exports = {
   listCompanies,
   createCompany,
   updateCompany,
-  deleteCompany
+  deleteCompany,
+  startScraping
 };
