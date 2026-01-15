@@ -1,3 +1,4 @@
+const http = require('http');
 const https = require('https');
 const { URL } = require('url');
 const companyRepository = require('../repositories/company.repository');
@@ -41,22 +42,24 @@ const sanitizeArray = (value) => {
   return [];
 };
 
-const postJson = (url, payload) =>
+const postJson = (url, payload, { timeoutMs = 15000 } = {}) =>
   new Promise((resolve, reject) => {
     const parsed = new URL(url);
     const data = JSON.stringify(payload);
+    const isHttps = parsed.protocol === 'https:';
+    const client = isHttps ? https : http;
     const options = {
       method: 'POST',
       hostname: parsed.hostname,
       path: `${parsed.pathname}${parsed.search}`,
-      port: parsed.port || 443,
+      port: parsed.port || (isHttps ? 443 : 80),
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(data)
       }
     };
 
-    const request = https.request(options, (res) => {
+    const request = client.request(options, (res) => {
       let body = '';
       res.on('data', (chunk) => {
         body += chunk;
@@ -67,6 +70,9 @@ const postJson = (url, payload) =>
     });
 
     request.on('error', (error) => reject(error));
+    request.setTimeout(timeoutMs, () => {
+      request.destroy(new Error('Tiempo de espera agotado al iniciar el scraping'));
+    });
     request.write(data);
     request.end();
   });
@@ -153,9 +159,13 @@ const startScraping = async (id) => {
     throw new HttpError(404, 'Compania no encontrada');
   }
 
-  const { status } = await postJson(env.scrapingWebhookUrl, { company_id: targetId });
+  const { status, body } = await postJson(env.scrapingWebhookUrl, { company_id: targetId });
   if (status < 200 || status >= 300) {
-    throw new HttpError(502, 'No se pudo iniciar el scraping');
+    const trimmedBody = body && body.length > 500 ? `${body.slice(0, 500)}...` : body;
+    throw new HttpError(502, 'No se pudo iniciar el scraping', {
+      status,
+      body: trimmedBody
+    });
   }
 
   return { status };

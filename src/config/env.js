@@ -14,7 +14,7 @@ const env = {
   bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS) || 12,
   scrapingWebhookUrl:
     process.env.SCRAPING_WEBHOOK_URL ||
-    'https://n8n.hubcapture.com/webhook-test/activate-scraping'
+    'https://n8n.hubcapture.com/webhook/activate-scraping'
 };
 
 module.exports = env;

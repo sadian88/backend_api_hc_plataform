@@ -13,7 +13,11 @@ const genericError = (err, req, res, next) => {
   };
 
   if (status >= 500) {
-    logger.error('Internal error', { err: err.message, stack: err.stack });
+    logger.error('Internal error', {
+      err: err.message,
+      details: err.details,
+      stack: err.stack
+    });
   }
 
   res.status(status).json({
